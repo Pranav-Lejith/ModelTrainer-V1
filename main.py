@@ -68,7 +68,7 @@ def create_splash_html(text):
 
 # Main content
 def main_content():
-    st.title("Creatus (Model Creator)")
+    st.title(":red[Creatus (Model Creator)]")
 
     # Sidebar for label input
     st.sidebar.title(":blue[Manage Labels]")
