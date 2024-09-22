@@ -8,6 +8,9 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Flatten, Conv2D, MaxPooling2D
 import zipfile
 from io import BytesIO
+st.set_page_config(page_title="Epsilon",page_icon='🤖',menu_items={
+        'About': "# :red[Creator]:blue[:] :violet[Pranav Lejith(:green[Amphibiar])]",
+    })
 
 # Initialize session state keys
 if 'labels' not in st.session_state:
@@ -90,7 +93,7 @@ def test_model(model, img_array, label_mapping):
     return predicted_label, confidence
 
 # Streamlit app
-st.title(":red[Model Creator]")
+st.title(":red[Epsilon (Model Creator)]")
 
 # Sidebar for label input
 st.sidebar.title(":blue[Manage Labels]")
@@ -129,7 +132,7 @@ if st.session_state['num_classes'] > 0:
 
 # Advanced options in sidebar
 with st.sidebar.expander("Advanced Options"):
-    epochs = st.number_input("Epochs", min_value=1, max_value=100, value=5)
+    epochs = st.number_input("Epochs", min_value=1, max_value=1000, value=10)
 
 # Button to train the model
 if st.session_state['num_classes'] > 1:
@@ -242,7 +245,7 @@ print(f"Predicted label: {{predicted_label}}")
         )
     except Exception as e:
         st.error("An error occurred while preparing the model for download.")
-
+st.sidebar.write("This app was created by :red[Pranav Lejith](:violet[Amphibiar])")
 st.sidebar.subheader(":orange[Usage Instructions]")
 st.sidebar.write(""" 
 1) Manage Labels: Enter a new label and upload images for that label.
@@ -251,9 +254,12 @@ st.sidebar.write("""
                  
 3) Test Model: Once the model is trained, you can test it with new images and see predictions along with confidence levels.
                  
-4) Download Model: Finally, you can download the trained model in TensorFlow Lite or .h5 format for use in other applications.
+4) Download Model: Finally, you can download the trained model in TensorFlow Lite or .h5 format for use in other applications. Tensorflow lite model is better because it is smaller in size as compared to the .h5 model so it can be used in many applications which have a file size limit.
                  
-This app was created by <span style='color:red;'>Pranav Lejith</span> <span style='color:violet;'> (Amphibiar)</span>.
+
 """, unsafe_allow_html=True)
 st.sidebar.subheader(":red[Warning]")
 st.sidebar.write('The code might produce a ghosting effect sometimes. Do not panic due to the Ghosting effect. It is caused due to delay in code execution.')
+
+st.sidebar.subheader(":blue[Note]  :green[ from]  :red[ Developer]:")
+st.sidebar.write('The Epsilon model creator is slightly more efficient than the teachable machine model creator as Epsilon provides more customizability. But, for beginners, teachable machine might be a more comfortable option due to its simplicity and user friendly interface. But for advanced developers, Epsilon will be more preferred choice.')
