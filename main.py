@@ -78,7 +78,7 @@ def main_content():
         if label_input in developer_commands:
             st.session_state['is_developer'] = True
             st.session_state['show_developer_splash'] = True
-            st.legacy_caching.clear_cache()  # This is optional and can be removed if not needed
+            #st.legacy_caching.clear_cache()  # This is optional and can be removed if not needed
 
         elif label_input and label_input not in st.session_state['labels']:
             st.session_state['labels'][label_input] = []
