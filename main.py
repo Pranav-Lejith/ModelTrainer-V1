@@ -12,7 +12,6 @@ st.set_page_config(page_title="Epsilon",page_icon='🤖',menu_items={
         'About': "# :red[Creator]:blue[:] :violet[Pranav Lejith(:green[Amphibiar])]",
     })
 
-# Initialize session state keys
 if 'labels' not in st.session_state:
     st.session_state['labels'] = {}
 if 'num_classes' not in st.session_state:
@@ -22,21 +21,13 @@ if 'label_mapping' not in st.session_state:
 if 'model' not in st.session_state:
     st.session_state['model'] = None
 
-# Define a function to train the model with progress
 def train_model(images, labels, num_classes, epochs, progress_bar):
     X = np.array(images)
     y = np.array(labels)
-
-    # Normalize the pixel values to be between 0 and 1
     X = X / 255.0
-
-    # One-hot encode the labels
     y = to_categorical(y, num_classes)
-
-    # Split the dataset into train and test sets
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    # Create the CNN model
     model = Sequential([
         Conv2D(32, (3, 3), activation='relu', input_shape=(64, 64, 3)),
         MaxPooling2D((2, 2)),
@@ -47,23 +38,20 @@ def train_model(images, labels, num_classes, epochs, progress_bar):
 
     model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
-    # Train the model with progress reporting
     for epoch in range(epochs):
         model.fit(X_train, y_train, epochs=1, validation_data=(X_test, y_test))
-        progress_bar.progress((epoch + 1) / epochs)  # Update the progress bar
+        progress_bar.progress((epoch + 1) / epochs)
 
     return model
 
-# Function to save the model in the specified format
 def save_model(model, export_format, usage_code):
     buffer = BytesIO()
     with zipfile.ZipFile(buffer, "w") as zf:
         if export_format == 'tflite':
-            input_shape = (1, 64, 64, 3)  # Adjust this based on your actual input shape
+            input_shape = (1, 64, 64, 3)
             run_model = tf.function(lambda x: model(x))
             concrete_func = run_model.get_concrete_function(tf.TensorSpec(input_shape, tf.float32))
 
-            # Convert the model to TensorFlow Lite format
             converter = tf.lite.TFLiteConverter.from_concrete_functions([concrete_func])
             tflite_model = converter.convert()
             zf.writestr("model.tflite", tflite_model)
@@ -71,31 +59,28 @@ def save_model(model, export_format, usage_code):
             model.save("model.h5")
             zf.write("model.h5")
 
-        # Add the usage code to the zip file
         zf.writestr("main.py", usage_code)
 
     buffer.seek(0)
     return buffer
 
-# Function to test the model with a new image
 def test_model(model, img_array, label_mapping):
-    img_array = np.expand_dims(img_array, axis=0)  # Add batch dimension
-    img_array = img_array / 255.0  # Normalize the image
-    
+    img_array = np.expand_dims(img_array, axis=0)
+    img_array = img_array / 255.0
     prediction = model.predict(img_array)
     predicted_label_index = np.argmax(prediction)
     confidence = np.max(prediction)
-    
-    # Reverse mapping from index to label
     labels_reverse_map = {v: k for k, v in label_mapping.items()}
-    
     predicted_label = labels_reverse_map[predicted_label_index]
     return predicted_label, confidence
 
+<<<<<<< HEAD
 # Streamlit app
 st.title(":red[Epsilon (Model Creator)]")
+=======
+st.title(":red[Model Creator]")
+>>>>>>> 06bf9c99722402275d545ad18a2e6f0e90271731
 
-# Sidebar for label input
 st.sidebar.title(":blue[Manage Labels]")
 if 'label_input' not in st.session_state:
     st.session_state.label_input = ""
@@ -106,20 +91,18 @@ if st.sidebar.button("Add Label"):
         st.session_state['labels'][label_name] = []
         st.session_state['num_classes'] += 1
         st.sidebar.success(f"Label '{label_name}' added!")
-        st.session_state.label_input = ""  # Clear the label input after adding
+        st.session_state.label_input = ""
     else:
         st.sidebar.warning("Label already exists or is empty.")
 
-# Dropdown to select model export format
 export_format = st.sidebar.selectbox("Select model export format:", options=["tflite", "h5"])
 
-# Display the existing labels and allow image upload in rows
 if st.session_state['num_classes'] > 0:
-    num_columns = 3  # Adjust this value for the number of columns you want
+    num_columns = 3
     cols = st.columns(num_columns)
     
     for i, label in enumerate(st.session_state['labels']):
-        with cols[i % num_columns]:  # Wrap to the next line
+        with cols[i % num_columns]:
             st.subheader(f"Upload images for label: {label}")
             uploaded_files = st.file_uploader(f"Upload images for {label}", accept_multiple_files=True, type=['jpg', 'jpeg', 'png'], key=label)
             
@@ -130,11 +113,9 @@ if st.session_state['num_classes'] > 0:
                     st.session_state['labels'][label].append(image_array)
                 st.success(f"Uploaded {len(uploaded_files)} images for label '{label}'.")
 
-# Advanced options in sidebar
 with st.sidebar.expander("Advanced Options"):
     epochs = st.number_input("Epochs", min_value=1, max_value=1000, value=10)
 
-# Button to train the model
 if st.session_state['num_classes'] > 1:
     if st.button("Train Model"):
         all_images = []
@@ -147,7 +128,7 @@ if st.session_state['num_classes'] > 1:
         
         if len(all_images) > 0:
             st.write("Training the model...")
-            progress_bar = st.progress(0)  # Initialize progress bar
+            progress_bar = st.progress(0)
             st.session_state['model'] = train_model(all_images, all_labels, st.session_state['num_classes'], epochs, progress_bar)
             st.success("Model trained!")
         else:
@@ -155,13 +136,11 @@ if st.session_state['num_classes'] > 1:
 else:
     st.warning("At least two labels are required to train the model.")
 
-# Option to test the trained model
 if st.session_state['model'] is not None:
     st.subheader("Test the trained model with a new image")
     test_image = st.file_uploader("Upload an image to test", type=['jpg', 'jpeg', 'png'], key="test")
     
     if test_image:
-        # Show image preview
         test_image_data = image.load_img(test_image, target_size=(64, 64))
         st.image(test_image_data, caption="Uploaded Image", use_column_width=True)
 
@@ -171,10 +150,8 @@ if st.session_state['model'] is not None:
         st.write(f"Predicted Label: {predicted_label}")
         st.slider("Confidence Level (%)", min_value=1, max_value=100, value=int(confidence * 100), disabled=True)
 
-# Initialize usage_code
 usage_code = ""
 
-# Button to download the model
 if st.session_state['model'] is not None and st.button("Download Model"):
     try:
         predicted_label_code = ', '.join([f"'{label}'" for label in st.session_state['label_mapping']])
@@ -186,25 +163,20 @@ import tensorflow as tf
 from tensorflow.keras.preprocessing import image
 import numpy as np
 
-# Load the model
 interpreter = tf.lite.Interpreter(model_path='model.tflite')
 interpreter.allocate_tensors()
 
-# Load and preprocess the image
 img = image.load_img('path/to/your/image.jpg', target_size=(64, 64))
 img_array = image.img_to_array(img)
 img_array = np.expand_dims(img_array, axis=0) / 255.0
 
-# Get input and output tensors
 input_details = interpreter.get_input_details()
 output_details = interpreter.get_output_details()
 
-# Make a prediction
 interpreter.set_tensor(input_details[0]['index'], img_array)
 interpreter.invoke()
 predictions = interpreter.get_tensor(output_details[0]['index'])
 
-# Get the predicted label
 predicted_label_index = np.argmax(predictions)
 labels = [{predicted_label_code}]
 predicted_label = labels[predicted_label_index]
@@ -217,18 +189,14 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
 import numpy as np
 
-# Load the model
 model = load_model('model.h5')
 
-# Load and preprocess the image
 img = image.load_img('path/to/your/image.jpg', target_size=(64, 64))
 img_array = image.img_to_array(img)
 img_array = np.expand_dims(img_array, axis=0) / 255.0
 
-# Make a prediction
 predictions = model.predict(img_array)
 
-# Get the predicted label
 predicted_label_index = np.argmax(predictions)
 labels = [{predicted_label_code}]
 predicted_label = labels[predicted_label_index]
@@ -236,7 +204,6 @@ print(f"Predicted label: {{predicted_label}}")
 """
         buffer = save_model(st.session_state['model'], export_format, usage_code)
 
-        # Save the model to a zip file in memory
         st.download_button(
             label="Download Model with Usage Code",
             data=buffer,
