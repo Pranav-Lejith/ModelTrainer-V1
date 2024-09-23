@@ -12,41 +12,9 @@ import time
 import matplotlib.pyplot as plt
 
 # Set page config
-st.set_page_config(
-    page_title="Creatus",
-    page_icon='logo.png',
-    menu_items={
-        'About': "# :red[Creator]:blue[:] :violet[Pranav Lejith(:green[Amphibiar])]",
-    },
-    layout='wide',
-    initial_sidebar_state='collapsed'  # Start with sidebar collapsed
-)
-
-# Function to hide sidebar
-def hide_sidebar():
-    st.markdown(
-        """
-        <style>
-        .css-1544g2n.e1fqkh3o4 {
-            display: none;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
-
-# Function to show sidebar
-def show_sidebar():
-    st.markdown(
-        """
-        <style>
-        .css-1544g2n.e1fqkh3o4 {
-            display: block;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
+st.set_page_config(page_title="Creatus", page_icon='logo.png', menu_items={
+    'About': "# :red[Creator]:blue[:] :violet[Pranav Lejith(:green[Amphibiar])]",
+}, layout='wide')
 
 # Initialize session state keys
 if 'labels' not in st.session_state:
@@ -71,8 +39,7 @@ developer_commands = [
     'control override-amphibiar', 'system override-amphibiar', 'user:amphibiar',
     'user:amphibiar-developer', 'user:amphibiar-admin', 'user:amphibiar-root',
     'control-admin', 'control-amphibiar','inititate override-amphibiar','currentuser:amphibiar',
-    'initiate control override', 'initiate control','switch control'
-]
+    'initiate control override', 'initiate control','switch control']
 
 # Custom HTML for splash screen with typewriter effect
 def create_splash_html(text, color):
@@ -423,35 +390,175 @@ def main_content():
     if st.session_state['is_developer']:
         if st.sidebar.button("Reset to Normal User", key="reset_button"):
             st.session_state['is_developer'] = False
-            st.experimental_rerun()
+            # st.experimental_rerun()
 
 # Define a function to train the model with progress
 def train_model(images, labels, num_classes, epochs, progress_bar, **kwargs):
-    # ... (rest of the train_model function remains unchanged)
-    pass
+    X = np.array(images)
+    y = np.array(labels)
+
+    # Normalize the pixel values to be between 0 and 1
+    X = X / 255.0
+
+    # One-hot encode the labels
+    y = to_categorical(y, num_classes)
+
+    # Split the dataset into train and test sets
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+    # Create the model based on the selected architecture
+    model_architecture = kwargs.get('model_architecture', 'Simple CNN')
+    if model_architecture == "Simple CNN":
+        model = Sequential([
+            Conv2D(32, (3, 3), activation='relu', input_shape=(64, 64, 3)),
+            MaxPooling2D((2, 2)),
+            Flatten(),
+            Dense(128, activation='relu'),
+            Dense(num_classes, activation='softmax')
+        ])
+    elif model_architecture == "VGG-like":
+        model = Sequential([
+            Conv2D(64, (3, 3), activation='relu', padding='same', input_shape=(64, 64, 3)),
+            Conv2D(64, (3, 3), activation='relu', padding='same'),
+            MaxPooling2D((2, 2)),
+            Conv2D(128, (3, 3), activation='relu', padding='same'),
+            Conv2D(128, (3, 3), activation='relu', padding='same'),
+            MaxPooling2D((2, 2)),
+            Flatten(),
+            Dense(256, activation='relu'),
+            Dense(num_classes, activation='softmax')
+        ])
+    elif model_architecture == "ResNet-like":
+        def residual_block(x, filters, kernel_size=3, stride=1):
+            y = Conv2D(filters, kernel_size, padding='same', strides=stride)(x)
+            y = tf.keras.layers.BatchNormalization()(y)
+            y = tf.keras.layers.Activation('relu')(y)
+            y = Conv2D(filters, kernel_size, padding='same')(y)
+            y = tf.keras.layers.BatchNormalization()(y)
+            if stride != 1 or x.shape[-1] != filters:
+                x = Conv2D(filters, 1, strides=stride, padding='same')(x)
+            return tf.keras.layers.add([x, y])
+
+        inputs = tf.keras.Input(shape=(64, 64, 3))
+        x = Conv2D(64, 7, strides=2, padding='same')(inputs)
+        x = tf.keras.layers.BatchNormalization()(x)
+        x = tf.keras.layers.Activation('relu')(x)
+        x = MaxPooling2D(3, strides=2, padding='same')(x)
+        x = residual_block(x, 64)
+        x = residual_block(x, 128, stride=2)
+        x = residual_block(x, 256, stride=2)
+        x = tf.keras.layers.GlobalAveragePooling2D()(x)
+        outputs = Dense(num_classes, activation='softmax')(x)
+        model = tf.keras.Model(inputs, outputs)
+    elif model_architecture == "Custom":
+        num_conv_layers = kwargs.get('num_conv_layers', 3)
+        num_dense_layers = kwargs.get('num_dense_layers', 2)
+        activation_function = kwargs.get('activation_function', 'relu')
+        
+        model = Sequential()
+        model.add(Conv2D(32, (3, 3), activation=activation_function, input_shape=(64, 64, 3)))
+        model.add(MaxPooling2D((2, 2)))
+        
+        for _ in range(num_conv_layers - 1):
+            model.add(Conv2D(64, (3, 3), activation=activation_function))
+            model.add(MaxPooling2D((2, 2)))
+        
+        model.add(Flatten())
+        
+        for _ in range(num_dense_layers - 1):
+            model.add(Dense(128, activation=activation_function))
+        
+        model.add(Dense(num_classes, activation='softmax'))
+
+    # Compile the model
+    optimizer = kwargs.get('optimizer', 'Adam')
+    learning_rate = kwargs.get('learning_rate', 0.001)
+    
+    if optimizer == 'Adam':
+        opt = tf.keras.optimizers.Adam(learning_rate=learning_rate)
+    elif optimizer == 'SGD':
+        momentum = kwargs.get('momentum', 0.9)
+        opt = tf.keras.optimizers.SGD(learning_rate=learning_rate, momentum=momentum)
+    elif optimizer == 'RMSprop':
+        opt = tf.keras.optimizers.RMSprop(learning_rate=learning_rate)
+    
+    model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
+
+    # Data augmentation
+    if kwargs.get('data_augmentation', False):
+        data_augmentation = tf.keras.Sequential([
+            tf.keras.layers.RandomFlip("horizontal"),
+            tf.keras.layers.RandomRotation(kwargs.get('rotation_range', 0.1)),
+            tf.keras.layers.RandomZoom(kwargs.get('zoom_range', 0.1)),
+        ])
+        if kwargs.get('vertical_flip', False):
+            data_augmentation.add(tf.keras.layers.RandomFlip("vertical"))
+        
+        X_train = data_augmentation(X_train)
+
+    # Callbacks
+    callbacks = []
+    if kwargs.get('early_stopping', False):
+        early_stop = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=kwargs.get('patience', 5))
+        callbacks.append(early_stop)
+
+    # Train the model with progress reporting
+    history = model.fit(X_train, y_train, epochs=epochs, validation_data=(X_test, y_test), 
+                        batch_size=kwargs.get('batch_size', 32), callbacks=callbacks)
+    
+    for epoch in range(epochs):
+        progress_bar.progress((epoch + 1) / epochs)  # Update the progress bar
+
+    model.history = history
+    return model
 
 # Function to save the model in the specified format
 def save_model(model, export_format, usage_code):
-    # ... (rest of the save_model function remains unchanged)
-    pass
+    buffer = BytesIO()
+    with zipfile.ZipFile(buffer, "w") as zf:
+        if export_format == 'tflite':
+            input_shape = (1, 64, 64, 3)  # Adjust this based on your actual input shape
+            run_model = tf.function(lambda x: model(x))
+            concrete_func = run_model.get_concrete_function(tf.TensorSpec(input_shape, tf.float32))
+
+            # Convert the model to TensorFlow Lite format
+            converter = tf.lite.TFLiteConverter.from_concrete_functions([concrete_func])
+            tflite_model = converter.convert()
+            zf.writestr("model.tflite", tflite_model)
+        elif export_format == 'h5':
+            model.save("model.h5")
+            zf.write("model.h5")
+
+        # Add the usage code to the zip file
+        zf.writestr("main.py", usage_code)
+
+    buffer.seek(0)
+    return buffer
 
 # Function to test the model with a new image
 def test_model(model, img_array, label_mapping):
-    # ... (rest of the test_model function remains unchanged)
-    pass
+    img_array = np.expand_dims(img_array, axis=0)  # Add batch dimension
+    img_array = img_array / 255.0  # Normalize the image
+    
+    prediction = model.predict(img_array)
+    predicted_label_index = np.argmax(prediction)
+    confidence = np.max(prediction)
+    
+    # Reverse mapping from index to label
+    labels_reverse_map = {v: k for k, v in label_mapping.items()}
+    
+    predicted_label = labels_reverse_map[predicted_label_index]
+    return predicted_label, confidence
 
 # Main app logic
 if st.session_state['initial_load']:
-    hide_sidebar()
     splash = st.empty()
     splash.markdown(create_splash_html("Creatus", '#48CFCB'), unsafe_allow_html=True)
     time.sleep(1)
     splash.empty()
-    show_sidebar()
     st.session_state['initial_load'] = False
     main_content()
 elif st.session_state['show_developer_splash']:
-    hide_sidebar()
     # Create a container for the entire app content
     app_container = st.empty()
     
@@ -467,8 +574,6 @@ elif st.session_state['show_developer_splash']:
     
     # Reset the developer splash flag
     st.session_state['show_developer_splash'] = False
-    
-    show_sidebar()
     
     # Show the main content
     with app_container.container():
