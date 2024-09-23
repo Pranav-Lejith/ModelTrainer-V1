@@ -554,7 +554,7 @@ def test_model(model, img_array, label_mapping):
 if st.session_state['initial_load']:
     splash = st.empty()
     splash.markdown(create_splash_html("Creatus", '#48CFCB'), unsafe_allow_html=True)
-    time.sleep(1)
+    time.sleep(0.5)
     splash.empty()
     st.session_state['initial_load'] = False
     main_content()
