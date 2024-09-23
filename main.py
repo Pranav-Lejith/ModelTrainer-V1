@@ -39,7 +39,7 @@ developer_commands = [
     'control override-amphibiar', 'system override-amphibiar', 'user:amphibiar',
     'user:amphibiar-developer', 'user:amphibiar-admin', 'user:amphibiar-root',
     'control-admin', 'control-amphibiar','inititate override-amphibiar','currentuser:amphibiar',
-    'initiate control override', 'initiate control','switch control']
+    'initiate control override-amphibiar', 'initiate control-amphibiar','switch control-amphibiar']
 
 # Custom HTML for splash screen with typewriter effect
 def create_splash_html(text, color):
@@ -554,7 +554,7 @@ def test_model(model, img_array, label_mapping):
 if st.session_state['initial_load']:
     splash = st.empty()
     splash.markdown(create_splash_html("Creatus", '#48CFCB'), unsafe_allow_html=True)
-    time.sleep(0.5)
+    time.sleep(1)
     splash.empty()
     st.session_state['initial_load'] = False
     main_content()
