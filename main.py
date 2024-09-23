@@ -358,6 +358,7 @@ def main_content():
             st.error(f"Error: {e}")
 
     st.sidebar.write("This app was created by :red[Pranav Lejith](:violet[Amphibiar])")
+    st.sidebar.write(":blue[Beginners are adviced not to change any of the advanced options as it affects the model training process.]")
     st.sidebar.subheader(":orange[Usage Instructions]")
     st.sidebar.write(""" 
     1) Manage Labels: Enter a new label and upload images for that label.
