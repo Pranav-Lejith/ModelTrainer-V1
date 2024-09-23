@@ -90,9 +90,6 @@ The app is accessible at: [creatus.streamlit.app](https://creatus.streamlit.app)
 - **Epochs**: The number of times the entire training dataset is passed through the neural network.
 - **Learning Rate**: The rate at which the model updates its weights during training.
 
-### Reset to Normal User
-
-- **Reset to Normal User**: Allows the developer to reset the app to normal user mode, disabling the advanced options.
 
 ### Summary
 
