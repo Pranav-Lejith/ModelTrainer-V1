@@ -419,7 +419,7 @@ print(f"Predicted Label: {{predicted_label_code[predicted_label]}}")
     **:orange[Epochs]**:
     An epoch is when all the training data is used at once and is defined as the total number of iterations of all the training data in one cycle for training the machine learning model. Another way to define an epoch is the number of passes a training dataset takes around an algorithm.
 
-   
+   """)
     # Add reset button for developer mode at the bottom of the sidebar
     if st.session_state['is_developer']:
         if st.sidebar.button("Reset to Normal User", key="reset_button"):
