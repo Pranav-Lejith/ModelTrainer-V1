@@ -415,15 +415,11 @@ print(f"Predicted Label: {{predicted_label_code[predicted_label]}}")
     st.sidebar.write('The Creatus model creator is slightly more efficient than the teachable machine model creator as Creatus provides more customizability. But, for beginners, teachable machine might be a more comfortable option due to its simplicity and user friendly interface. But for advanced developers, Creatus will be more preferred choice.')
     st.sidebar.subheader(':blue[Definitions]  ')
     st.sidebar.write("""
-    **:red[Batch Size]**:
-    Batch size is the number of samples that you feed into your model at each iteration of the training process. It determines how often you update the model parameters based on the gradient of the loss function. A larger batch size means more data per update, but also more memory and computation requirements.
-
+   
     **:orange[Epochs]**:
     An epoch is when all the training data is used at once and is defined as the total number of iterations of all the training data in one cycle for training the machine learning model. Another way to define an epoch is the number of passes a training dataset takes around an algorithm.
 
-    **:violet[Learning Rate]**:
-    Learning rate refers to the strength by which newly acquired information overrides old information. It determines how much importance is given to recent information compared to previous information during the learning process.
-    """)
+   
     # Add reset button for developer mode at the bottom of the sidebar
     if st.session_state['is_developer']:
         if st.sidebar.button("Reset to Normal User", key="reset_button"):
