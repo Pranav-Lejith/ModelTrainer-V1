@@ -1,3 +1,9 @@
+# Created by Amphibiar(Pranav Lejith)
+# Created for: Idk..
+# Created on: Friday
+# Current Version: 6.4.1
+# Features: Refer Readme.md
+# Reason for comments: Boredd
 import streamlit as st
 import tensorflow as tf
 import numpy as np
