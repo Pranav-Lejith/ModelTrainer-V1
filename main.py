@@ -325,43 +325,43 @@ def main_content():
 
             if export_format == 'tflite':
                 usage_code = f"""
-    import tensorflow as tf
-    import numpy as np
+import tensorflow as tf
+import numpy as np
 
-    # Load the model
-    interpreter = tf.lite.Interpreter(model_path="model.tflite")
-    interpreter.allocate_tensors()
+# Load the model
+interpreter = tf.lite.Interpreter(model_path="model.tflite")
+interpreter.allocate_tensors()
 
-    input_details = interpreter.get_input_details()
-    output_details = interpreter.get_output_details()
+input_details = interpreter.get_input_details()
+output_details = interpreter.get_output_details()
 
-    # Prepare the image (adjust this for your actual input)
-    img = np.random.rand(1, 64, 64, 3).astype(np.float32)
+# Prepare the image (adjust this for your actual input)
+img = np.random.rand(1, 64, 64, 3).astype(np.float32)
 
-    # Test the model
-    interpreter.set_tensor(input_details[0]['index'], img)
-    interpreter.invoke()
+# Test the model
+interpreter.set_tensor(input_details[0]['index'], img)
+interpreter.invoke()
 
-    output = interpreter.get_tensor(output_details[0]['index'])
-    predicted_label = np.argmax(output)
-    predicted_label_code = [{predicted_label_code}]
-    print(f"Predicted Label: {{predicted_label_code[predicted_label]}}")
+output = interpreter.get_tensor(output_details[0]['index'])
+predicted_label = np.argmax(output)
+predicted_label_code = [{predicted_label_code}]
+print(f"Predicted Label: {{predicted_label_code[predicted_label]}}")
     """
             elif export_format == 'h5':
                 usage_code = f"""
-    import tensorflow as tf
+import tensorflow as tf
 
-    # Load the model
-    model = tf.keras.models.load_model('model.h5')
+# Load the model
+model = tf.keras.models.load_model('model.h5')
 
-    # Prepare the image (adjust this for your actual input)
-    img = np.random.rand(1, 64, 64, 3)
+# Prepare the image (adjust this for your actual input)
+img = np.random.rand(1, 64, 64, 3)
 
-    # Test the model
-    prediction = model.predict(img)
-    predicted_label = np.argmax(prediction)
-    predicted_label_code = [{predicted_label_code}]
-    print(f"Predicted Label: {{predicted_label_code[predicted_label]}}")
+# Test the model
+prediction = model.predict(img)
+predicted_label = np.argmax(prediction)
+predicted_label_code = [{predicted_label_code}]
+print(f"Predicted Label: {{predicted_label_code[predicted_label]}}")
     """
 
             buffer = save_model(st.session_state['model'], export_format, usage_code)
@@ -607,7 +607,7 @@ elif st.session_state['show_developer_splash']:
 
     # Show only the developer splash
     dev_splash = st.empty()
-    dev_splash.markdown(create_splash_html("Welcome ,Pranav Lejith {Amphibiar] (Developer)... ", 'red'), unsafe_allow_html=True)
+    dev_splash.markdown(create_splash_html("Welcome,Amphibiar(Developer)... ", 'red'), unsafe_allow_html=True)
 
     # Wait for the typing animation to complete (adjust the sleep time if needed)
     time.sleep(4)
