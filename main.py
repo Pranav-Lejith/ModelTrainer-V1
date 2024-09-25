@@ -591,7 +591,7 @@ if st.session_state['initial_load']:
     main_content()
 elif st.session_state['dev_command_entered']:
     dev_splash = st.empty()
-    dev_splash.markdown(create_splash_html("Welcome, Pranav Lejith {Amphibiar] (Developer)... ", 'red'), unsafe_allow_html=True)
+    dev_splash.markdown(create_splash_html("Welcome,Amphibiar(Developer)... ", 'red'), unsafe_allow_html=True)
     time.sleep(4)
     dev_splash.empty()
     st.session_state['dev_command_entered'] = False
