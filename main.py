@@ -1,9 +1,3 @@
-# Created by Amphibiar(Pranav Lejith)
-# Created for: Idk..
-# Created on: Friday
-# Current Version: 6.4.1
-# Features: Refer Readme.md
-# Reason for comments: Boredd
 import streamlit as st
 import tensorflow as tf
 import numpy as np
@@ -20,7 +14,6 @@ import matplotlib.pyplot as plt
 # Set page config
 st.set_page_config(page_title="Creatus", page_icon='logo.png', menu_items={
     'About': "# :red[Creator]:blue[:] :violet[Pranav Lejith(:green[Amphibiar])]"
-    # 'Get Help': 'eh',
 }, layout='wide')
 
 # Initialize session state keys
@@ -38,16 +31,19 @@ if 'show_developer_splash' not in st.session_state:
     st.session_state['show_developer_splash'] = False
 if 'initial_load' not in st.session_state:
     st.session_state['initial_load'] = True
+if 'dev_command_entered' not in st.session_state:
+    st.session_state['dev_command_entered'] = False
 
 # Developer authentication (hidden from normal users)
 developer_commands = [
-    'override protocol-amphibiar', 'override command-amphibiar',
-    'command override-amphibiar', 'command override-amphibiar23',
+    'override protocol-amphibiar', 'override command-amphibiar', 
+    'command override-amphibiar', 'command override-amphibiar23', 
     'control override-amphibiar', 'system override-amphibiar', 'user:amphibiar',
     'user:amphibiar-developer', 'user:amphibiar-admin', 'user:amphibiar-root',
     'control-admin', 'control-amphibiar','initiate override-amphibiar','currentuser:amphibiar',
     'initiate control override-amphibiar', 'initiate control-amphibiar','switch control-amphibiar'
-    'override emergency protocol-amphibiar']
+    'override emergency protocol-amphibiar'
+]
 
 # Custom HTML for splash screen with typewriter effect
 def create_splash_html(text, color):
@@ -88,9 +84,9 @@ def main_content():
     label_input = st.sidebar.text_input("Enter a new label:")
     if st.sidebar.button("Add Label"):
         if label_input in developer_commands:
+            st.session_state['dev_command_entered'] = True
             st.session_state['is_developer'] = True
             st.session_state['show_developer_splash'] = True
-            # st.experimental_rerun()
         elif label_input and label_input not in st.session_state['labels']:
             st.session_state['labels'][label_input] = []
             st.session_state['num_classes'] += 1
@@ -100,13 +96,13 @@ def main_content():
 
     # Display the existing labels and allow image upload in rows
     if st.session_state['num_classes'] > 0:
-        num_columns = 3  # Adjust this value for the number of columns you want
+        num_columns = 3
         cols = st.columns(num_columns)
 
         for i, label in enumerate(st.session_state['labels']):
-            with cols[i % num_columns]:  # Wrap to the next line
+            with cols[i % num_columns]:
                 st.subheader(f"Upload images for label: {label}")
-                uploaded_files = st.file_uploader(f"Upload images for {label}", accept_multiple_files=True, type=['jpg', 'jpeg', 'png','webp'], key=label)
+                uploaded_files = st.file_uploader(f"Upload images for {label}", accept_multiple_files=True, type=['jpg', 'jpeg', 'png', 'webp'], key=label)
 
                 if uploaded_files:
                     for uploaded_file in uploaded_files:
@@ -123,7 +119,6 @@ def main_content():
         if col2.button(":red[-]", key=f"delete_{label}"):
             del st.session_state['labels'][label]
             st.session_state['num_classes'] -= 1
-            # st.experimental_rerun()
 
     # Dropdown to select model export format
     export_format = st.sidebar.selectbox("Select model export format:", options=["tflite", "h5"])
@@ -134,7 +129,6 @@ def main_content():
         learning_rate = st.number_input("Learning Rate", min_value=0.0001, max_value=0.1, value=0.001, format="%.4f")
         batch_size = st.number_input("Batch Size", min_value=1, max_value=128, value=32)
 
-        # Define model_architecture with a default value
         model_architecture = "Simple CNN"
 
         if st.session_state['is_developer']:
@@ -152,7 +146,7 @@ def main_content():
                 st.markdown(f"""
                     <style>
                     :root {{
-                        --primary-color: {primary_color};                        
+                        --primary-color: {primary_color};
                         --secondary-color: {secondary_color};
                         --background-color: {background_color};
                         --text-color: {text_color};
@@ -181,7 +175,7 @@ def main_content():
             # Data augmentation options
             data_augmentation = st.checkbox("Enable Data Augmentation")
             if data_augmentation:
-                rotation_range = st.slider("Rotation Range(Degrees)", 0, 180, 20)
+                rotation_range = st.slider("Rotation Range (Degrees)", 0, 180, 20)
                 zoom_range = st.slider("Zoom Range", 0.0, 1.0, 0.2)
                 horizontal_flip = st.checkbox("Horizontal Flip", value=True)
                 vertical_flip = st.checkbox("Vertical Flip")
@@ -225,9 +219,8 @@ def main_content():
 
             if len(all_images) > 0:
                 st.write("Training the model...")
-                progress_bar = st.progress(0)  # Initialize progress bar
+                progress_bar = st.progress(0)
 
-                # Prepare training options
                 training_options = {
                     "learning_rate": learning_rate,
                     "batch_size": batch_size,
@@ -274,25 +267,27 @@ def main_content():
 
                     if plot_training_history and hasattr(st.session_state['model'], 'history'):
                         st.subheader("Training History")
-                        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 10))
-                        ax1.plot(st.session_state['model'].history.history['accuracy'])
-                        ax1.plot(st.session_state['model'].history.history['val_accuracy'])
-                        ax1.set_title('Model Accuracy')
-                        ax1.set_ylabel('Accuracy')
-                        ax1.set_xlabel('Epoch')
-                        ax1.legend(['Train', 'Validation'], loc='upper left')
+                        col1, col2 = st.columns([1, 3])
+                        with col2:
+                            fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 6))
+                            ax1.plot(st.session_state['model'].history.history['accuracy'])
+                            ax1.plot(st.session_state['model'].history.history['val_accuracy'])
+                            ax1.set_title('Model Accuracy')
+                            ax1.set_ylabel('Accuracy')
+                            ax1.set_xlabel('Epoch')
+                            ax1.legend(['Train', 'Validation'], loc='lower right')
 
-                        ax2.plot(st.session_state['model'].history.history['loss'])
-                        ax2.plot(st.session_state['model'].history.history['val_loss'])
-                        ax2.set_title('Model Loss')
-                        ax2.set_ylabel('Loss')
-                        ax2.set_xlabel('Epoch')
-                        ax2.legend(['Train', 'Validation'], loc='upper left')
+                            ax2.plot(st.session_state['model'].history.history['loss'])
+                            ax2.plot(st.session_state['model'].history.history['val_loss'])
+                            ax2.set_title('Model Loss')
+                            ax2.set_ylabel('Loss')
+                            ax2.set_xlabel('Epoch')
+                            ax2.legend(['Train', 'Validation'], loc='upper right')
 
-                        st.pyplot(fig)
+                            plt.tight_layout()
+                            st.pyplot(fig)
 
                     if export_tensorboard_logs:
-                        # Code to export TensorBoard logs
                         pass
 
                 st.toast('Model Trained Successfully')
@@ -308,7 +303,6 @@ def main_content():
         test_image = st.file_uploader("Upload an image to test", type=['jpg', 'jpeg', 'png','webp'], key="test")
 
         if test_image:
-            # Show image preview
             test_image_data = image.load_img(test_image, target_size=(64, 64))
             st.image(test_image_data, caption="Uploaded Image", use_column_width=True)
 
@@ -321,50 +315,7 @@ def main_content():
     # Button to download the model
     if st.session_state['model'] is not None and st.button("Download Model"):
         try:
-            predicted_label_code = ', '.join([f"'{label}'" for label in st.session_state['label_mapping']])
-
-            if export_format == 'tflite':
-                usage_code = f"""
-import tensorflow as tf
-import numpy as np
-
-# Load the model
-interpreter = tf.lite.Interpreter(model_path="model.tflite")
-interpreter.allocate_tensors()
-
-input_details = interpreter.get_input_details()
-output_details = interpreter.get_output_details()
-
-# Prepare the image (adjust this for your actual input)
-img = np.random.rand(1, 64, 64, 3).astype(np.float32)
-
-# Test the model
-interpreter.set_tensor(input_details[0]['index'], img)
-interpreter.invoke()
-
-output = interpreter.get_tensor(output_details[0]['index'])
-predicted_label = np.argmax(output)
-predicted_label_code = [{predicted_label_code}]
-print(f"Predicted Label: {{predicted_label_code[predicted_label]}}")
-    """
-            elif export_format == 'h5':
-                usage_code = f"""
-import tensorflow as tf
-
-# Load the model
-model = tf.keras.models.load_model('model.h5')
-
-# Prepare the image (adjust this for your actual input)
-img = np.random.rand(1, 64, 64, 3)
-
-# Test the model
-prediction = model.predict(img)
-predicted_label = np.argmax(prediction)
-predicted_label_code = [{predicted_label_code}]
-print(f"Predicted Label: {{predicted_label_code[predicted_label]}}")
-    """
-
-            buffer = save_model(st.session_state['model'], export_format, usage_code)
+            buffer = save_model(st.session_state['model'], export_format, st.session_state['label_mapping'])
 
             st.download_button(
                 label="Download the trained model and usage code",
@@ -376,7 +327,7 @@ print(f"Predicted Label: {{predicted_label_code[predicted_label]}}")
             st.error(f"Error: {e}")
 
     st.sidebar.write("This app was created by :red[**Pranav Lejith**](:violet[**Amphibiar**])")
-    st.sidebar.write(":green[Beginners are adviced not to change any of the advanced options as it affects the model training process. Any doubts or errors or any suggestions to improve the app further can be discussed with the Developer.]")
+    st.sidebar.write(":green[Beginners are advised not to change any of the advanced options as it affects the model training process. Any doubts or errors or any suggestions to improve the app further can be discussed with the Developer.]")
 
     st.sidebar.subheader(":orange[**Usage Instructions**]")
     st.sidebar.write("""
@@ -402,11 +353,8 @@ print(f"Predicted Label: {{predicted_label_code[predicted_label]}}")
     ### Step 5: Download the Model
     1. After training, choose your desired export format (TensorFlow Lite or H5) from the sidebar.
     2. Click the "Download Model" button to download the model along with the usage code.
-
-    
     """, unsafe_allow_html=True)
     
-
     st.sidebar.subheader(":blue[Note]  :green[ from]  :red[ Developer]")
     st.sidebar.write('The Creatus model creator is slightly more efficient than the teachable machine model creator as Creatus provides more customizability. But, for beginners, teachable machine might be a more comfortable option due to its simplicity and user friendly interface. But for advanced developers, Creatus will be more preferred choice.')
     st.sidebar.subheader(':blue[Definitions]  ')
@@ -418,27 +366,21 @@ print(f"Predicted Label: {{predicted_label_code[predicted_label]}}")
     """)
     st.sidebar.subheader(":red[**Warning**]")
     st.sidebar.write('The code might produce a ghosting effect sometimes. Do not panic due to the Ghosting effect. It is caused due to delay in code execution.')
-    # Add reset button for developer mode at the bottom of the sidebar
     if st.session_state['is_developer']:
         if st.sidebar.button("Reset to Normal User", key="reset_button"):
             st.session_state['is_developer'] = False
-            # st.experimental_rerun()
+            st.session_state['dev_command_entered'] = False
 
-# Define a function to train the model with progress
 def train_model(images, labels, num_classes, epochs, progress_bar, **kwargs):
     X = np.array(images)
     y = np.array(labels)
 
-    # Normalize the pixel values to be between 0 and 1
     X = X / 255.0
 
-    # One-hot encode the labels
     y = to_categorical(y, num_classes)
 
-    # Split the dataset into train and test sets
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    # Create the model based on the selected architecture
     model_architecture = kwargs.get('model_architecture', 'Simple CNN')
     if model_architecture == "Simple CNN":
         model = Sequential([
@@ -493,7 +435,7 @@ def train_model(images, labels, num_classes, epochs, progress_bar, **kwargs):
 
         for i in range(num_conv_layers - 1):
             model.add(Conv2D(64 * (2**i), (3, 3), activation=activation_function, padding='same'))
-            if i < num_conv_layers - 2:  # Add MaxPooling for all but the last Conv layer
+            if i < num_conv_layers - 2:
                 model.add(MaxPooling2D((2, 2)))
 
         model.add(Flatten())
@@ -503,7 +445,6 @@ def train_model(images, labels, num_classes, epochs, progress_bar, **kwargs):
 
         model.add(Dense(num_classes, activation='softmax'))
 
-    # Compile the model
     optimizer = kwargs.get('optimizer', 'Adam')
     learning_rate = kwargs.get('learning_rate', 0.001)
 
@@ -517,11 +458,10 @@ def train_model(images, labels, num_classes, epochs, progress_bar, **kwargs):
 
     model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
 
-    # Data augmentation
     if kwargs.get('data_augmentation', False):
         data_augmentation = tf.keras.Sequential([
             tf.keras.layers.RandomFlip("horizontal"),
-            tf.keras.layers.RandomRotation(kwargs.get('rotation_range', 20) / 180.0),  # Convert degrees to radians
+            tf.keras.layers.RandomRotation(kwargs.get('rotation_range', 20) / 180.0),
             tf.keras.layers.RandomZoom(kwargs.get('zoom_range', 0.2)),
         ])
         if kwargs.get('vertical_flip', False):
@@ -529,13 +469,11 @@ def train_model(images, labels, num_classes, epochs, progress_bar, **kwargs):
 
         X_train = data_augmentation(X_train)
 
-    # Callbacks
     callbacks = []
     if kwargs.get('early_stopping', False):
         early_stop = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=kwargs.get('patience', 5))
         callbacks.append(early_stop)
 
-    # Custom callback for updating the progress bar
     class ProgressBarCallback(tf.keras.callbacks.Callback):
         def __init__(self, epochs, progress_bar):
             self.epochs = epochs
@@ -548,46 +486,96 @@ def train_model(images, labels, num_classes, epochs, progress_bar, **kwargs):
     progress_callback = ProgressBarCallback(epochs, progress_bar)
     callbacks.append(progress_callback)
 
-    # Train the model with progress reporting
     history = model.fit(X_train, y_train, epochs=epochs, validation_data=(X_test, y_test),
                         batch_size=kwargs.get('batch_size', 32), callbacks=callbacks)
 
     model.history = history
     return model
 
-# Function to save the model in the specified format
-def save_model(model, export_format, usage_code):
+def save_model(model, export_format, label_mapping):
     buffer = BytesIO()
     with zipfile.ZipFile(buffer, "w") as zf:
         if export_format == 'tflite':
-            input_shape = (1, 64, 64, 3)  # Adjust this based on your actual input shape
-            run_model = tf.function(lambda x: model(x))
-            concrete_func = run_model.get_concrete_function(tf.TensorSpec(input_shape, tf.float32))
-
-            # Convert the model to TensorFlow Lite format
-            converter = tf.lite.TFLiteConverter.from_concrete_functions([concrete_func])
+            converter = tf.lite.TFLiteConverter.from_keras_model(model)
             tflite_model = converter.convert()
             zf.writestr("model.tflite", tflite_model)
+            
+            usage_code = """
+import tensorflow as tf
+import numpy as np
+from PIL import Image
+
+def preprocess_image(image_path):
+    img = Image.open(image_path).convert('RGB')
+    img = img.resize((64, 64))
+    img_array = np.array(img) / 255.0
+    return np.expand_dims(img_array, axis=0).astype(np.float32)
+
+# Load the model
+interpreter = tf.lite.Interpreter(model_path="model.tflite")
+interpreter.allocate_tensors()
+
+input_details = interpreter.get_input_details()
+output_details = interpreter.get_output_details()
+
+# Prepare the image
+image_path = input("Enter the path to your image: ")
+img = preprocess_image(image_path)
+
+# Test the model
+interpreter.set_tensor(input_details[0]['index'], img)
+interpreter.invoke()
+
+output = interpreter.get_tensor(output_details[0]['index'])
+predicted_label = np.argmax(output)
+label_mapping = {label_mapping[label]: label for label in label_mapping}
+print(f"Predicted Label: {label_mapping[predicted_label]}")
+print(f"Confidence: {np.max(output):.2f}")
+"""
         elif export_format == 'h5':
             model.save("model.h5")
             zf.write("model.h5")
+            
+            usage_code = """
+import tensorflow as tf
+import numpy as np
+from PIL import Image
 
-        # Add the usage code to the zip file
+def preprocess_image(image_path):
+    img = Image.open(image_path).convert('RGB')
+    img = img.resize((64, 64))
+    img_array = np.array(img) / 255.0
+    return np.expand_dims(img_array, axis=0)
+
+# Load the model
+model = tf.keras.models.load_model('model.h5')
+
+# Prepare the image
+image_path = input("Enter the path to your image: ")
+img = preprocess_image(image_path)
+
+# Test the model
+prediction = model.predict(img)
+predicted_label = np.argmax(prediction)
+label_mapping = {label_mapping[label]: label for label in label_mapping}
+print(f"Predicted Label: {label_mapping[predicted_label]}")
+print(f"Confidence: {np.max(prediction):.2f}")
+"""
+
         zf.writestr("main.py", usage_code)
+        zf.writestr("label_mapping.py", f"label_mapping = {label_mapping}")
 
     buffer.seek(0)
     return buffer
 
-# Function to test the model with a new image
 def test_model(model, img_array, label_mapping):
-    img_array = np.expand_dims(img_array, axis=0)  # Add batch dimension
-    img_array = img_array / 255.0  # Normalize the image
+    img_array = np.expand_dims(img_array, axis=0)
+    img_array = img_array / 255.0
 
     prediction = model.predict(img_array)
     predicted_label_index = np.argmax(prediction)
     confidence = np.max(prediction)
 
-    # Reverse mapping from index to label
     labels_reverse_map = {v: k for k, v in label_mapping.items()}
 
     predicted_label = labels_reverse_map[predicted_label_index]
@@ -601,25 +589,12 @@ if st.session_state['initial_load']:
     splash.empty()
     st.session_state['initial_load'] = False
     main_content()
-elif st.session_state['show_developer_splash']:
-    # Create a container for the entire app content
-    app_container = st.empty()
-
-    # Show only the developer splash
+elif st.session_state['dev_command_entered']:
     dev_splash = st.empty()
-    dev_splash.markdown(create_splash_html("Welcome,Amphibiar(Developer)... ", 'red'), unsafe_allow_html=True)
-
-    # Wait for the typing animation to complete (adjust the sleep time if needed)
+    dev_splash.markdown(create_splash_html("Welcome, Pranav Lejith {Amphibiar] (Developer)... ", 'red'), unsafe_allow_html=True)
     time.sleep(4)
-
-    # Clear the developer splash
     dev_splash.empty()
-
-    # Reset the developer splash flag
-    st.session_state['show_developer_splash'] = False
-
-    # Show the main content
-    with app_container.container():
-        main_content()
+    st.session_state['dev_command_entered'] = False
+    main_content()
 else:
     main_content()
