@@ -11,10 +11,12 @@ from io import BytesIO
 import time
 import matplotlib.pyplot as plt
 
+# Set page config
 st.set_page_config(page_title="Creatus", page_icon='logo.png', menu_items={
     'About': "# :red[Creator]:blue[:] :violet[Pranav Lejith(:green[Amphibiar])]"
 }, layout='wide')
 
+# Initialize session state keys
 if 'labels' not in st.session_state:
     st.session_state['labels'] = {}
 if 'num_classes' not in st.session_state:
@@ -32,6 +34,7 @@ if 'initial_load' not in st.session_state:
 if 'dev_command_entered' not in st.session_state:
     st.session_state['dev_command_entered'] = False
 
+# Developer authentication (hidden from normal users)
 developer_commands = [
     'override protocol-amphibiar', 'override command-amphibiar', 
     'command override-amphibiar', 'command override-amphibiar23', 
@@ -42,6 +45,7 @@ developer_commands = [
     'override emergency protocol-amphibiar'
 ]
 
+# Custom HTML for splash screen with typewriter effect
 def create_splash_html(text, color):
     return f"""
     <style>
@@ -70,9 +74,11 @@ def create_splash_html(text, color):
     </div>
     """
 
+# Main content
 def main_content():
     st.title(":red[Creatus (Model Creator)]")
 
+    # Sidebar for label input
     st.sidebar.title(":blue[Manage Labels]")
 
     label_input = st.sidebar.text_input("Enter a new label:")
@@ -88,6 +94,7 @@ def main_content():
         else:
             st.sidebar.warning("Label already exists or is empty.")
 
+    # Display the existing labels and allow image upload in rows
     if st.session_state['num_classes'] > 0:
         num_columns = 3
         cols = st.columns(num_columns)
@@ -104,6 +111,7 @@ def main_content():
                         st.session_state['labels'][label].append(image_array)
                     st.success(f"Uploaded {len(uploaded_files)} images for label '{label}'.")
 
+    # Display labels with delete buttons
     st.sidebar.subheader("Existing Labels")
     for label in list(st.session_state['labels'].keys()):
         col1, col2 = st.sidebar.columns([0.8, 0.2])
@@ -112,8 +120,10 @@ def main_content():
             del st.session_state['labels'][label]
             st.session_state['num_classes'] -= 1
 
+    # Dropdown to select model export format
     export_format = st.sidebar.selectbox("Select model export format:", options=["tflite", "h5"])
 
+    # Advanced options in sidebar
     with st.sidebar.expander("Advanced Options", expanded=st.session_state['is_developer']):
         epochs = st.number_input("Epochs", min_value=1, max_value=1000, value=10)
         learning_rate = st.number_input("Learning Rate", min_value=0.0001, max_value=0.1, value=0.001, format="%.4f")
@@ -124,6 +134,7 @@ def main_content():
         if st.session_state['is_developer']:
             st.subheader("Developer Options")
 
+            # Theme customization
             theme = st.selectbox("Theme", ["Light", "Dark", "Custom"])
             if theme == "Custom":
                 primary_color = st.color_picker("Primary Color", "#FF4B4B")
@@ -131,6 +142,7 @@ def main_content():
                 background_color = st.color_picker("Background Color", "#FFFFFF")
                 text_color = st.color_picker("Text Color", "#262730")
 
+                # Apply custom theme
                 st.markdown(f"""
                     <style>
                     :root {{
@@ -153,12 +165,14 @@ def main_content():
                     </style>
                 """, unsafe_allow_html=True)
 
+            # Model architecture options
             model_architecture = st.selectbox("Model Architecture", ["Simple CNN", "VGG-like", "ResNet-like", "Custom"])
             if model_architecture == "Custom":
                 num_conv_layers = st.number_input("Number of Convolutional Layers", min_value=1, max_value=10, value=3)
                 num_dense_layers = st.number_input("Number of Dense Layers", min_value=1, max_value=5, value=2)
                 activation_function = st.selectbox("Activation Function", ["relu", "leaky_relu", "elu", "selu"])
 
+            # Data augmentation options
             data_augmentation = st.checkbox("Enable Data Augmentation")
             if data_augmentation:
                 rotation_range = st.slider("Rotation Range (Degrees)", 0, 180, 20)
@@ -166,14 +180,17 @@ def main_content():
                 horizontal_flip = st.checkbox("Horizontal Flip", value=True)
                 vertical_flip = st.checkbox("Vertical Flip")
 
+            # Training options
             early_stopping = st.checkbox("Enable Early Stopping")
             if early_stopping:
                 patience = st.number_input("Early Stopping Patience", min_value=1, max_value=20, value=5)
 
+            # Optimization options
             optimizer = st.selectbox("Optimizer", ["Adam", "SGD", "RMSprop"])
             if optimizer == "SGD":
                 momentum = st.slider("Momentum", 0.0, 1.0, 0.9)
 
+            # Regularization options
             l2_regularization = st.checkbox("L2 Regularization")
             if l2_regularization:
                 l2_lambda = st.number_input("L2 Lambda", min_value=0.0001, max_value=0.1, value=0.001, format="%.4f")
@@ -182,11 +199,14 @@ def main_content():
             if dropout:
                 dropout_rate = st.slider("Dropout Rate", 0.0, 0.5, 0.2)
 
+            # Advanced visualization options
             show_model_summary = st.checkbox("Show Model Summary")
             plot_training_history = st.checkbox("Plot Training History")
 
+            # Export options
             export_tensorboard_logs = st.checkbox("Export TensorBoard Logs")
 
+    # Button to train the model
     if st.session_state['num_classes'] > 1:
         if st.button("Train Model"):
             all_images = []
@@ -277,6 +297,7 @@ def main_content():
     else:
         st.warning("At least two labels are required to train the model.")
 
+    # Option to test the trained model
     if st.session_state['model'] is not None:
         st.subheader("Test the trained model with a new image")
         test_image = st.file_uploader("Upload an image to test", type=['jpg', 'jpeg', 'png','webp'], key="test")
@@ -291,6 +312,7 @@ def main_content():
             st.write(f"Predicted Label: {predicted_label}")
             st.slider("Confidence Level (%)", min_value=1, max_value=100, value=int(confidence * 100), disabled=True)
 
+    # Button to download the model
     if st.session_state['model'] is not None and st.button("Download Model"):
         try:
             buffer = save_model(st.session_state['model'], export_format, st.session_state['label_mapping'])
@@ -307,7 +329,7 @@ def main_content():
     st.sidebar.write("This app was created by :red[**Pranav Lejith**](:violet[**Amphibiar**])")
     st.sidebar.write(":green[Beginners are advised not to change any of the advanced options as it affects the model training process. Any doubts or errors or any suggestions to improve the app further can be discussed with the Developer.]")
 
-    st.sidebar.subhest.sidebar.subheader(":orange[**Usage Instructions**]")
+    st.sidebar.subheader(":orange[**Usage Instructions**]")
     st.sidebar.write("""
     ### Step 1: Add Labels
     1. In the sidebar, enter the name of a label in the "Enter a new label" input field.
@@ -559,6 +581,7 @@ def test_model(model, img_array, label_mapping):
     predicted_label = labels_reverse_map[predicted_label_index]
     return predicted_label, confidence
 
+# Main app logic
 if st.session_state['initial_load']:
     splash = st.empty()
     splash.markdown(create_splash_html("Creatus", '#48CFCB'), unsafe_allow_html=True)
