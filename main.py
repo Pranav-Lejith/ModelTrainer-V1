@@ -307,8 +307,7 @@ def main_content():
     st.sidebar.write("This app was created by :red[**Pranav Lejith**](:violet[**Amphibiar**])")
     st.sidebar.write(":green[Beginners are advised not to change any of the advanced options as it affects the model training process. Any doubts or errors or any suggestions to improve the app further can be discussed with the Developer.]")
 
-    st.sidebar.subhest.sidebar.subhe
-ader(":orange[**Usage Instructions**]")
+    st.sidebar.subhest.sidebar.subheader(":orange[**Usage Instructions**]")
     st.sidebar.write("""
     ### Step 1: Add Labels
     1. In the sidebar, enter the name of a label in the "Enter a new label" input field.
